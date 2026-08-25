@@ -1,0 +1,16 @@
+.lista-prestamos {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.lista-prestamos__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.lista-prestamos__error {
+  color: #dc2626;
+}

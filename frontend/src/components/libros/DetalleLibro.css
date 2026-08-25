@@ -1,0 +1,63 @@
+.detalle-libro {
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.detalle-libro__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.detalle-libro__estado {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.detalle-libro__estado.disponible {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.detalle-libro__estado.prestado {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.detalle-libro__meta {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.detalle-libro__acciones {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.detalle-libro__acciones button {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.detalle-libro__acciones button.secundario {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.detalle-libro__acciones button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.detalle-libro__error {
+  color: #dc2626;
+  padding: 2rem;
+}

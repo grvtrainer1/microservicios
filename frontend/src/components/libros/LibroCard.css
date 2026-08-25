@@ -1,0 +1,53 @@
+.libro-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: white;
+}
+
+.libro-card__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.libro-card h3 {
+  margin: 0 0 0.35rem;
+}
+
+.libro-card__estado {
+  flex-shrink: 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.libro-card__estado.disponible {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.libro-card__estado.prestado {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.libro-card__autor {
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.libro-card__acciones {
+  display: flex;
+  gap: 1rem;
+}
+
+.libro-card a {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+}
