@@ -1,5 +1,7 @@
 # Biblioteca Online — Demo de arquitectura de microservicios
 
+**Autor:** Mgr. Gustavo Rojas Valdivia
+
 Proyecto docente mínimo para explicar cómo encajan React, un Gateway, Eureka
 y varios microservicios Spring Boot. La temática (una biblioteca online) es
 una excusa: lo importante es la arquitectura.
