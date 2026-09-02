@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagrama de Flujo del Sistema - Biblioteca Online</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Mermaid.js for Sequence Diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <style>
+    @keyframes pulse-ring {
+      0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+      70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+      100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+    .node-active {
+      animation: pulse-ring 2s infinite ease-in-out;
+      border-color: #2563eb !important;
+      background-color: #eff6ff !important;
+    }
+    .arrow-path {
+      transition: stroke 0.3s ease, stroke-width 0.3s ease, opacity 0.3s ease;
+      stroke-dasharray: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      animation: dash 1.5s linear infinite;
+      opacity: 0.3;
+    }
+    .arrow-path-active {
+      opacity: 1 !important;
+      stroke-width: 3.5px !important;
+      filter: drop-shadow(0px 0px 4px rgba(37, 99, 235, 0.5));
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -12; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md">
+          <i class="fa-solid fa-diagram-project text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-slate-900 text-lg leading-tight">Arquitectura y Flujos del Sistema</h1>
+          <p class="text-xs text-slate-500">Sistema de Biblioteca Online — Demo Microservicios</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <button id="tab-interactive" onclick="switchTab('interactive')" class="px-4 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all text-white bg-blue-600 shadow-sm">
+          <i class="fa-solid fa-play me-1.5"></i> Diagrama Interactivo
+        </button>
+        <button id="tab-sequence" onclick="switchTab('sequence')" class="px-4 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-list-check me-1.5"></i> Diagramas UML
+        </button>
+        <button id="tab-rules" onclick="switchTab('rules')" class="px-4 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-book-bookmark me-1.5"></i> Reglas y API REST
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow flex flex-col gap-6">
+
+    <!-- SECTION 1: INTERACTIVE DIAGRAM -->
+    <section id="sec-interactive" class="flex flex-col gap-6">
+
+      <!-- Flow Selector & Controller Bar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider me-2">Flujos:</span>
+          <button id="flow-btn-0" onclick="setFlow(0)" class="flow-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700">
+            0. Registro Eureka
+          </button>
+          <button id="flow-btn-1" onclick="setFlow(1)" class="flow-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700">
+            1. Buscar Libros
+          </button>
+          <button id="flow-btn-2" onclick="setFlow(2)" class="flow-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-600 bg-blue-600 text-white shadow-md">
+            2. Crear Préstamo
+          </button>
+          <button id="flow-btn-3" onclick="setFlow(3)" class="flow-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700">
+            3. Devolver Libro
+          </button>
+        </div>
+
+        <!-- Step Controls -->
+        <div class="flex items-center space-x-2 w-full lg:w-auto justify-end">
+          <button id="btn-prev" onclick="prevStep()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-chevron-left me-1"></i> Anterior
+          </button>
+          <button id="btn-next" onclick="nextStep()" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+            Siguiente <i class="fa-solid fa-chevron-right ms-1"></i>
+          </button>
+          <button onclick="resetFlow()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 text-xs font-semibold" title="Reiniciar Flujo">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step Description Box -->
+      <div class="bg-blue-50/70 border border-blue-200 p-4 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div id="step-badge" class="inline-block text-xs font-bold text-blue-700 uppercase tracking-wide">
+            Flujo 2: Crear Préstamo — Paso 1
+          </div>
+          <p id="step-description" class="text-sm font-medium text-slate-800">
+            El usuario en React solicita un préstamo enviando una petición POST al Gateway.
+          </p>
+        </div>
+        <div class="bg-slate-900 text-emerald-400 font-mono text-xs px-3 py-2 rounded-lg border border-slate-800 shrink-0 w-full md:w-auto text-center md:text-left shadow-inner">
+          <span class="text-slate-500 me-2">HTTP:</span><span id="step-http">POST /api/prestamos</span>
+        </div>
+      </div>
+
+      <div id="diagram-canvas" class="relative bg-white border border-slate-200 rounded-2xl p-6 shadow-sm overflow-hidden min-h-[600px] flex flex-col justify-between">
+        
+        <!-- SVG Overlay for Orthogonal Arrows -->
+        <svg id="svg-connections" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+          <defs>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" />
+            </marker>
+            <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669" />
+            </marker>
+            <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706" />
+            </marker>
+            <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed" />
+            </marker>
+            <marker id="arrow-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#e11d48" />
+            </marker>
+          </defs>
+          
+          <!-- Connections paths -->
+          <path id="conn-fe-gw" class="arrow-path" stroke="#2563eb" stroke-width="2" fill="none" marker-end="url(#arrow-blue)" />
+          <path id="conn-gw-eureka" class="arrow-path" stroke="#d97706" stroke-width="2" fill="none" marker-end="url(#arrow-amber)" />
+          <path id="conn-gw-operador" class="arrow-path" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#arrow-purple)" />
+          <path id="conn-gw-buscador" class="arrow-path" stroke="#059669" stroke-width="2" fill="none" marker-end="url(#arrow-emerald)" />
+          <path id="conn-operador-eureka" class="arrow-path" stroke="#d97706" stroke-width="2" fill="none" marker-end="url(#arrow-amber)" />
+          <path id="conn-buscador-eureka" class="arrow-path" stroke="#d97706" stroke-width="2" fill="none" marker-end="url(#arrow-amber)" />
+          <path id="conn-operador-buscador" class="arrow-path" stroke="#e11d48" stroke-width="2" fill="none" marker-end="url(#arrow-rose)" />
+          <path id="conn-operador-db" class="arrow-path" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#arrow-purple)" />
+          <path id="conn-buscador-db" class="arrow-path" stroke="#059669" stroke-width="2" fill="none" marker-end="url(#arrow-emerald)" />
+        </svg>
+
+        <!-- ZONE 1: VERCEL (FRONTEND) -->
+        <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 bg-slate-50/50 relative mb-6">
+          <span class="absolute top-2 left-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <i class="fa-solid fa-cloud me-1"></i> Vercel (Frontend Boundary)
+          </span>
+          <div class="flex justify-center pt-4">
+            <div id="node-frontend" class="bg-white border-2 border-slate-300 rounded-xl p-3 px-6 shadow-sm flex items-center space-x-3 transition-all z-20">
+              <div class="p-2 bg-sky-100 text-sky-600 rounded-lg">
+                <i class="fa-brands fa-react text-2xl"></i>
+              </div>
+              <div>
+                <div class="text-xs text-slate-400 font-mono">Terminal / Client</div>
+                <div class="font-bold text-slate-800 text-sm">frontend (React)</div>
+                <div class="text-[11px] text-slate-500 font-mono">:5173</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZONE 2: RAILWAY / AWS / AZURE (BACKEND) -->
+        <div class="border-2 border-dashed border-slate-300 rounded-xl p-5 bg-slate-50/50 relative flex-grow flex flex-col justify-between space-y-8">
+          <span class="absolute top-2 left-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <i class="fa-solid fa-server me-1"></i> Railway / AWS / Azure (Backend Services)
+          </span>
+
+          <!-- Gateway Layer -->
+          <div class="flex justify-center pt-3">
+            <div id="node-gateway" class="bg-white border-2 border-slate-300 rounded-xl p-3 px-6 shadow-sm flex items-center space-x-3 transition-all z-20">
+              <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                <i class="fa-solid fa-network-wired text-xl"></i>
+              </div>
+              <div>
+                <div class="text-xs text-slate-400 font-mono">Spring Cloud Gateway</div>
+                <div class="font-bold text-slate-800 text-sm">gateway</div>
+                <div class="text-[11px] text-slate-500 font-mono">:8080 (StripPrefix=1)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Eureka Discovery Layer -->
+          <div class="flex justify-center">
+            <div id="node-eureka" class="bg-white border-2 border-slate-300 rounded-xl p-3 px-6 shadow-sm flex items-center space-x-3 transition-all z-20">
+              <div class="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                <i class="fa-solid fa-compass text-xl"></i>
+              </div>
+              <div>
+                <div class="text-xs text-slate-400 font-mono">Service Registry</div>
+                <div class="font-bold text-slate-800 text-sm">eureka-server</div>
+                <div class="text-[11px] text-slate-500 font-mono">:8761</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Microservices & Databases Layer -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+
+            <!-- MS 1: Operador + DB -->
+            <div class="flex flex-col items-center space-y-4">
+              <div id="node-ms-operador" class="bg-white border-2 border-slate-300 rounded-xl p-3 px-5 shadow-sm flex items-center space-x-3 w-full max-w-xs transition-all z-20">
+                <div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                  <i class="fa-solid fa-gears text-xl"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 font-mono">MS 1 - Operador</div>
+                  <div class="font-bold text-slate-800 text-sm">ms-operador</div>
+                  <div class="text-[11px] text-slate-500 font-mono">:8081 (Préstamos)</div>
+                </div>
+              </div>
+
+              <!-- Database Operador -->
+              <div id="node-db-operador" class="bg-white border-2 border-slate-300 rounded-xl p-2.5 px-4 shadow-sm flex items-center space-x-3 transition-all z-20">
+                <div class="p-1.5 bg-purple-50 text-purple-600 rounded-md">
+                  <i class="fa-solid fa-database text-lg"></i>
+                </div>
+                <div>
+                  <div class="text-[11px] font-bold text-slate-700">H2 Database</div>
+                  <div class="text-[10px] text-slate-500 font-mono">db_prestamos</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MS 2: Buscador + DB -->
+            <div class="flex flex-col items-center space-y-4">
+              <div id="node-ms-buscador" class="bg-white border-2 border-slate-300 rounded-xl p-3 px-5 shadow-sm flex items-center space-x-3 w-full max-w-xs transition-all z-20">
+                <div class="p-2 bg-teal-100 text-teal-600 rounded-lg">
+                  <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 font-mono">MS 2 - Buscador</div>
+                  <div class="font-bold text-slate-800 text-sm">ms-buscador</div>
+                  <div class="text-[11px] text-slate-500 font-mono">:8082 (Catálogo Libros)</div>
+                </div>
+              </div>
+
+              <!-- Database Buscador -->
+              <div id="node-db-buscador" class="bg-white border-2 border-slate-300 rounded-xl p-2.5 px-4 shadow-sm flex items-center space-x-3 transition-all z-20">
+                <div class="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                  <i class="fa-solid fa-database text-lg"></i>
+                </div>
+                <div>
+                  <div class="text-[11px] font-bold text-slate-700">H2 Database</div>
+                  <div class="text-[10px] text-slate-500 font-mono">db_buscador</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="sec-sequence" class="hidden flex-col gap-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <h2 class="text-lg font-bold text-slate-900 border-b pb-3 flex items-center">
+          <i class="fa-solid fa-diagram-next text-blue-600 me-2"></i> Diagramas de Secuencia UML
+        </h2>
+
+        <!-- Flujo 1 Sequence -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-sm text-slate-800 flex items-center">
+            <span class="bg-teal-100 text-teal-800 text-xs px-2 py-0.5 rounded font-mono me-2">Flujo 1</span>
+            Buscar Libros en Catálogo
+          </h3>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-x-auto">
+            <pre class="mermaid text-xs">
+sequenceDiagram
+    autonumber
+    actor U as "Usuario (React)"
+    participant G as "Gateway (:8080)"
+    participant E as "Eureka (:8761)"
+    participant B as "MS-Buscador (:8082)"
+    participant DB_B as "BD Buscador (H2)"
+
+    U->>G: GET /api/libros?titulo=Quijote
+    G->>E: Resuelve IP de ms-buscador
+    E-->>G: Instancia IP:8082
+    G->>B: GET /libros?titulo=Quijote (StripPrefix=1)
+    B->>DB_B: SELECT * FROM libros WHERE titulo LIKE '%Quijote%'
+    DB_B-->>B: Lista de libros
+    B-->>G: 200 OK [ id: 1, disponible: true ]
+    G-->>U: 200 OK
+            </pre>
+          </div>
+        </div>
+
+        <!-- Flujo 2 Sequence -->
+        <div class="space-y-3 pt-4 border-t border-slate-200">
+          <h3 class="font-bold text-sm text-slate-800 flex items-center">
+            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-mono me-2">Flujo 2</span>
+            Crear Préstamo (Validación y Cambio de Estado)
+          </h3>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-x-auto">
+            <pre class="mermaid text-xs">
+sequenceDiagram
+    autonumber
+    actor U as "Usuario (React)"
+    participant G as "Gateway (:8080)"
+    participant E as "Eureka (:8761)"
+    participant O as "MS-Operador (:8081)"
+    participant B as "MS-Buscador (:8082)"
+    participant DB_O as "BD Operador (H2)"
+    participant DB_B as "BD Buscador (H2)"
+
+    U->>G: POST /api/prestamos { libroId: 3, usuario: 'ana' }
+    G->>E: Resuelve IP de ms-operador
+    E-->>G: Instancia IP:8081
+    G->>O: POST /prestamos
+    Note over O,B: Consulta directa por nombre Eureka (http://ms-buscador/...)
+    O->>B: GET /libros/3
+    B->>DB_B: SELECT * FROM libros WHERE id=3
+    DB_B-->>B: { id: 3, disponible: true }
+    B-->>O: 200 OK (disponible: true)
+    
+    alt Libro Disponible
+        O->>DB_O: INSERT INTO prestamos (libro_id, estado='ACTIVO')
+        DB_O-->>O: Guardado (id: 1)
+        O->>B: PUT /libros/3/disponibilidad { disponible: false }
+        B->>DB_B: UPDATE libros SET disponible=false
+        DB_B-->>B: Actualizado
+        B-->>O: 200 OK
+        O-->>G: 201 Created { id: 1, estado: 'ACTIVO' }
+        G-->>U: 201 Created
+    else Libro NO Disponible
+        O-->>G: 409 Conflict (Libro prestado)
+        G-->>U: 409 Conflict
+    end
+            </pre>
+          </div>
+        </div>
+
+        <!-- Flujo 3 Sequence -->
+        <div class="space-y-3 pt-4 border-t border-slate-200">
+          <h3 class="font-bold text-sm text-slate-800 flex items-center">
+            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded font-mono me-2">Flujo 3</span>
+            Devolver Libro (Restablecer Disponibilidad)
+          </h3>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-x-auto">
+            <pre class="mermaid text-xs">
+sequenceDiagram
+    autonumber
+    actor U as "Usuario (React)"
+    participant G as "Gateway (:8080)"
+    participant E as "Eureka (:8761)"
+    participant O as "MS-Operador (:8081)"
+    participant B as "MS-Buscador (:8082)"
+    participant DB_O as "BD Operador (H2)"
+    participant DB_B as "BD Buscador (H2)"
+
+    U->>G: PUT /api/prestamos/1
+    G->>E: Resuelve IP de ms-operador
+    E-->>G: Instancia IP:8081
+    G->>O: PUT /prestamos/1
+    O->>DB_O: UPDATE prestamos SET estado='DEVUELTO' WHERE id=1
+    DB_O-->>O: OK
+    O->>B: PUT /libros/3/disponibilidad { disponible: true }
+    B->>DB_B: UPDATE libros SET disponible=true
+    DB_B-->>B: OK
+    B-->>O: 200 OK
+    O-->>G: 200 OK { id: 1, estado: 'DEVUELTO' }
+    G-->>U: 200 OK
+            </pre>
+          </div>
+        </div>
+
+        <!-- Flujo 2 Sequence -->
+        <div class="space-y-3 pt-4 border-t border-slate-200">
+          <h3 class="font-bold text-sm text-slate-800 flex items-center">
+            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-mono me-2">Flujo 2</span>
+            Crear Préstamo (Validación y Cambio de Estado)
+          </h3>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-x-auto">
+            <pre class="mermaid text-xs">
+sequenceDiagram
+    autonumber
+    actor U as "Usuario (React)"
+    participant G as "Gateway (:8080)"
+    participant E as "Eureka (:8761)"
+    participant O as "MS-Operador (:8081)"
+    participant B as "MS-Buscador (:8082)"
+    participant DB_O as "BD Operador (H2)"
+    participant DB_B as "BD Buscador (H2)"
+
+    U->>G: POST /api/prestamos { libroId: 3, usuario: "ana" }
+    G->>E: Resuelve IP de ms-operador
+    E-->>G: Instancia IP:8081
+    G->>O: POST /prestamos
+    Note over O,B: Consulta directa por nombre Eureka (http://ms-buscador/...)
+    O->>B: GET /libros/3
+    B->>DB_B: SELECT * FROM libros WHERE id=3
+    DB_B-->>B: { id: 3, disponible: true }
+    B-->>O: 200 OK (disponible: true)
+    
+    alt Libro Disponible
+        O->>DB_O: INSERT INTO prestamos (libro_id, estado='ACTIVO')
+        DB_O-->>O: Guardado (id: 1)
+        O->>B: PUT /libros/3/disponibilidad { disponible: false }
+        B->>DB_B: UPDATE libros SET disponible=false
+        DB_B-->>B: Actualizado
+        B-->>O: 200 OK
+        O-->>G: 201 Created { id: 1, estado: "ACTIVO" }
+        G-->>U: 201 Created
+    else Libro NO Disponible
+        O-->>G: 409 Conflict (Libro prestado)
+        G-->>U: 409 Conflict
+    end
+            </pre>
+          </div>
+        </div>
+
+        <!-- Flujo 3 Sequence -->
+        <div class="space-y-3 pt-4 border-t border-slate-200">
+          <h3 class="font-bold text-sm text-slate-800 flex items-center">
+            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded font-mono me-2">Flujo 3</span>
+            Devolver Libro (Restablecer Disponibilidad)
+          </h3>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-x-auto">
+            <pre class="mermaid text-xs">
+sequenceDiagram
+    autonumber
+    actor U as "Usuario (React)"
+    participant G as "Gateway (:8080)"
+    participant E as "Eureka (:8761)"
+    participant O as "MS-Operador (:8081)"
+    participant B as "MS-Buscador (:8082)"
+    participant DB_O as "BD Operador (H2)"
+    participant DB_B as "BD Buscador (H2)"
+
+    U->>G: PUT /api/prestamos/1
+    G->>E: Resuelve IP de ms-operador
+    E-->>G: Instancia IP:8081
+    G->>O: PUT /prestamos/1
+    O->>DB_O: UPDATE prestamos SET estado='DEVUELTO' WHERE id=1
+    DB_O-->>O: OK
+    O->>B: PUT /libros/3/disponibilidad { disponible: true }
+    B->>DB_B: UPDATE libros SET disponible=true
+    DB_B-->>B: OK
+    B-->>O: 200 OK
+    O-->>G: 200 OK { id: 1, estado: "DEVUELTO" }
+    G-->>U: 200 OK
+            </pre>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="sec-rules" class="hidden flex-col gap-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <h2 class="text-lg font-bold text-slate-900 border-b pb-3 flex items-center">
+          <i class="fa-solid fa-shield-halved text-blue-600 me-2"></i> Reglas Clave y Endpoints REST API
+        </h2>
+
+        <!-- Rules Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-sm text-slate-800 mb-2 flex items-center">
+              <i class="fa-solid fa-lock text-amber-500 me-2"></i> Frontend Aislado
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              El Frontend en React solo se comunica con el Gateway (<code>:8080</code>). Nunca conoce las IPs ni los puertos reales de los microservicios.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-sm text-slate-800 mb-2 flex items-center">
+              <i class="fa-solid fa-diagram-successor text-emerald-500 me-2"></i> Descubrimiento Dinámico
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Todas las llamadas inter-servicio utilizan nombres registrados en Eureka (<code>http://ms-buscador/...</code>) con balanceo de carga implícito.
+            </p>
+          </div>
+        </div>
+
+        <!-- API Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left text-slate-600 border border-slate-200 rounded-lg overflow-hidden">
+            <thead class="bg-slate-100 text-slate-800 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Servicio</th>
+                <th class="p-3">Método</th>
+                <th class="p-3">Ruta Gateway</th>
+                <th class="p-3">Ruta Interna</th>
+                <th class="p-3">Descripción / Ámbito</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <!-- ms-buscador -->
+              <tr class="bg-teal-50/40">
+                <td class="p-3 font-semibold text-teal-700">ms-buscador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">GET</span></td>
+                <td class="p-3 font-mono">/api/libros</td>
+                <td class="p-3 font-mono">/libros</td>
+                <td class="p-3">Buscar catálogo (filtros opcionales: ?titulo, ?autor, ?anio, ?disponible)</td>
+              </tr>
+              <tr class="bg-teal-50/40">
+                <td class="p-3 font-semibold text-teal-700">ms-buscador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">GET</span></td>
+                <td class="p-3 font-mono">/api/libros/{id}</td>
+                <td class="p-3 font-mono">/libros/{id}</td>
+                <td class="p-3">Obtener ficha técnica de un libro por ID</td>
+              </tr>
+              <tr class="bg-teal-50/40">
+                <td class="p-3 font-semibold text-teal-700">ms-buscador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">POST</span></td>
+                <td class="p-3 font-mono">/api/libros</td>
+                <td class="p-3 font-mono">/libros</td>
+                <td class="p-3">Registrar un nuevo libro en el catálogo</td>
+              </tr>
+              <tr class="bg-teal-50/40">
+                <td class="p-3 font-semibold text-teal-700">ms-buscador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-bold">PUT</span></td>
+                <td class="p-3 font-mono font-semibold text-slate-400">N/A (Interno)</td>
+                <td class="p-3 font-mono">/libros/{id}/disponibilidad</td>
+                <td class="p-3">Actualizar estado disponible (true/false) — Invocado internamente por ms-operador</td>
+              </tr>
+
+              <!-- ms-operador -->
+              <tr class="bg-purple-50/40">
+                <td class="p-3 font-semibold text-purple-700">ms-operador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">GET</span></td>
+                <td class="p-3 font-mono">/api/prestamos</td>
+                <td class="p-3 font-mono">/prestamos</td>
+                <td class="p-3">Obtener todos los préstamos registrados</td>
+              </tr>
+              <tr class="bg-purple-50/40">
+                <td class="p-3 font-semibold text-purple-700">ms-operador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">GET</span></td>
+                <td class="p-3 font-mono">/api/prestamos/{id}</td>
+                <td class="p-3 font-mono">/prestamos/{id}</td>
+                <td class="p-3">Obtener información de un préstamo por ID</td>
+              </tr>
+              <tr class="bg-purple-50/40">
+                <td class="p-3 font-semibold text-purple-700">ms-operador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold">POST</span></td>
+                <td class="p-3 font-mono">/api/prestamos</td>
+                <td class="p-3 font-mono">/prestamos</td>
+                <td class="p-3">Valida disponibilidad en ms-buscador y crea un nuevo préstamo</td>
+              </tr>
+              <tr class="bg-purple-50/40">
+                <td class="p-3 font-semibold text-purple-700">ms-operador</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-bold">PUT</span></td>
+                <td class="p-3 font-mono">/api/prestamos/{id}</td>
+                <td class="p-3 font-mono">/prestamos/{id}</td>
+                <td class="p-3">Devolver préstamo (marca estado DEVUELTO y restablece libro a disponible=true)</td>
+              </tr>
+
+              <!-- Infraestructura -->
+              <tr class="bg-slate-50">
+                <td class="p-3 font-semibold text-slate-700">eureka-server</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">GET</span></td>
+                <td class="p-3 font-mono font-semibold text-slate-400">N/A (Interno)</td>
+                <td class="p-3 font-mono">/eureka/apps</td>
+                <td class="p-3">Registro y descubrimiento de instancias de microservicios activas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const flows = [
+      {
+        id: 0,
+        title: "Flujo 0: Registro inicial en Eureka",
+        steps: [
+          {
+            badge: "Flujo 0 — Paso 1",
+            description: "Los microservicios (ms-buscador y ms-operador) se dan de alta en Eureka Server al arrancar.",
+            http: "POST /eureka/apps/{appName}",
+            nodes: ["node-eureka", "node-ms-operador", "node-ms-buscador"],
+            connections: ["conn-operador-eureka", "conn-buscador-eureka"]
+          },
+          {
+            badge: "Flujo 0 — Paso 2",
+            description: "Spring Cloud Gateway se registra en Eureka y sincroniza la lista de servicios activos.",
+            http: "GET /eureka/apps",
+            nodes: ["node-gateway", "node-eureka"],
+            connections: ["conn-gw-eureka"]
+          }
+        ]
+      },
+      {
+        id: 1,
+        title: "Flujo 1: Buscar Libros",
+        steps: [
+          {
+            badge: "Flujo 1 — Paso 1",
+            description: "El usuario busca libros en la UI de React, que envía la petición GET al Gateway.",
+            http: "GET /api/libros?titulo=Quijote",
+            nodes: ["node-frontend", "node-gateway"],
+            connections: ["conn-fe-gw"]
+          },
+          {
+            badge: "Flujo 1 — Paso 2",
+            description: "El Gateway resuelve la IP de ms-buscador a través de Eureka Server.",
+            http: "Eureka Resolution -> lb://ms-buscador",
+            nodes: ["node-gateway", "node-eureka"],
+            connections: ["conn-gw-eureka"]
+          },
+          {
+            badge: "Flujo 1 — Paso 3",
+            description: "El Gateway quita el prefijo /api (StripPrefix=1) y reenvía la solicitud a ms-buscador.",
+            http: "GET /libros?titulo=Quijote",
+            nodes: ["node-gateway", "node-ms-buscador"],
+            connections: ["conn-gw-buscador"]
+          },
+          {
+            badge: "Flujo 1 — Paso 4",
+            description: "ms-buscador consulta su base de datos H2 (db_buscador) y retorna los resultados al usuario.",
+            http: "200 OK [ { id: 1, disponible: true } ]",
+            nodes: ["node-ms-buscador", "node-db-buscador", "node-frontend"],
+            connections: ["conn-buscador-db", "conn-fe-gw"]
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Flujo 2: Crear Préstamo",
+        steps: [
+          {
+            badge: "Flujo 2 — Paso 1",
+            description: "El usuario en React solicita un préstamo enviando una petición POST al Gateway.",
+            http: "POST /api/prestamos { libroId: 3, usuario: 'ana' }",
+            nodes: ["node-frontend", "node-gateway"],
+            connections: ["conn-fe-gw"]
+          },
+          {
+            badge: "Flujo 2 — Paso 2",
+            description: "El Gateway consulta Eureka y reenvía la solicitud a ms-operador.",
+            http: "POST /prestamos (StripPrefix=1)",
+            nodes: ["node-gateway", "node-eureka", "node-ms-operador"],
+            connections: ["conn-gw-eureka", "conn-gw-operador"]
+          },
+          {
+            badge: "Flujo 2 — Paso 3",
+            description: "ms-operador llama a ms-buscador por nombre Eureka (http://ms-buscador/libros/3) para verificar la disponibilidad.",
+            http: "GET http://ms-buscador/libros/3",
+            nodes: ["node-ms-operador", "node-ms-buscador", "node-db-buscador"],
+            connections: ["conn-operador-buscador", "conn-buscador-db"]
+          },
+          {
+            badge: "Flujo 2 — Paso 4",
+            description: "Al confirmar disponibilidad, ms-operador crea y guarda el registro en su propia base de datos H2 (db_prestamos).",
+            http: "INSERT INTO prestamos (libro_id, estado='ACTIVO')",
+            nodes: ["node-ms-operador", "node-db-operador"],
+            connections: ["conn-operador-db"]
+          },
+          {
+            badge: "Flujo 2 — Paso 5",
+            description: "ms-operador llama nuevamente a ms-buscador para actualizar el libro a disponible = false.",
+            http: "PUT http://ms-buscador/libros/3/disponibilidad",
+            nodes: ["node-ms-operador", "node-ms-buscador", "node-db-buscador"],
+            connections: ["conn-operador-buscador", "conn-buscador-db"]
+          },
+          {
+            badge: "Flujo 2 — Paso 6",
+            description: "ms-operador responde con el préstamo creado (HTTP 201 Created) a través del Gateway hacia el Frontend.",
+            http: "201 Created { id: 1, estado: 'ACTIVO' }",
+            nodes: ["node-ms-operador", "node-gateway", "node-frontend"],
+            connections: ["conn-gw-operador", "conn-fe-gw"]
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "Flujo 3: Devolver Libro",
+        steps: [
+          {
+            badge: "Flujo 3 — Paso 1",
+            description: "El usuario solicita la devolución de un libro desde el Frontend enviando una petición PUT.",
+            http: "PUT /api/prestamos/1",
+            nodes: ["node-frontend", "node-gateway"],
+            connections: ["conn-fe-gw"]
+          },
+          {
+            badge: "Flujo 3 — Paso 2",
+            description: "El Gateway reenvía a ms-operador, que actualiza el estado del préstamo a DEVUELTO en su BD.",
+            http: "UPDATE prestamos SET estado='DEVUELTO' WHERE id=1",
+            nodes: ["node-gateway", "node-ms-operador", "node-db-operador"],
+            connections: ["conn-gw-operador", "conn-operador-db"]
+          },
+          {
+            badge: "Flujo 3 — Paso 3",
+            description: "ms-operador notifica a ms-buscador para restaurar la disponibilidad del libro (disponible = true).",
+            http: "PUT http://ms-buscador/libros/3/disponibilidad { disponible: true }",
+            nodes: ["node-ms-operador", "node-ms-buscador", "node-db-buscador"],
+            connections: ["conn-operador-buscador", "conn-buscador-db"]
+          },
+          {
+            badge: "Flujo 3 — Paso 4",
+            description: "La devolución finaliza y el libro vuelve a estar libre en el catálogo público.",
+            http: "200 OK { id: 1, estado: 'DEVUELTO' }",
+            nodes: ["node-ms-operador", "node-gateway", "node-frontend"],
+            connections: ["conn-gw-operador", "conn-fe-gw"]
+          }
+        ]
+      }
+    ];
+
+    let currentFlowIndex = 2; // Default to Flow 2
+    let currentStepIndex = 0;
+
+    function getOrthogonalPath(fromElem, toElem, container) {
+      if (!fromElem || !toElem || !container) return "";
+
+      const r1 = fromElem.getBoundingClientRect();
+      const r2 = toElem.getBoundingClientRect();
+      const c = container.getBoundingClientRect();
+
+      const p1 = {
+        x: r1.left + r1.width / 2 - c.left,
+        y: r1.top + r1.height / 2 - c.top,
+        top: r1.top - c.top,
+        bottom: r1.bottom - c.top,
+        left: r1.left - c.left,
+        right: r1.right - c.left
+      };
+
+      const p2 = {
+        x: r2.left + r2.width / 2 - c.left,
+        y: r2.top + r2.height / 2 - c.top,
+        top: r2.top - c.top,
+        bottom: r2.bottom - c.top,
+        left: r2.left - c.left,
+        right: r2.right - c.left
+      };
+
+      // Determine orientation relative position
+      if (Math.abs(p1.x - p2.x) < 20) {
+        // Vertical straight alignment
+        const startY = p1.y < p2.y ? p1.bottom : p1.top;
+        const endY = p1.y < p2.y ? p2.top : p2.bottom;
+        return `M ${p1.x} ${startY} L ${p2.x} ${endY}`;
+      }
+
+      if (Math.abs(p1.y - p2.y) < 20) {
+        // Horizontal straight alignment
+        const startX = p1.x < p2.x ? p1.right : p1.left;
+        const endX = p1.x < p2.x ? p2.left : p2.right;
+        return `M ${startX} ${p1.y} L ${endX} ${p2.y}`;
+      }
+
+      // Orthogonal elbow / stepped path
+      if (p1.y < p2.y) {
+        const midY = p1.bottom + (p2.top - p1.bottom) / 2;
+        return `M ${p1.x} ${p1.bottom} V ${midY} H ${p2.x} V ${p2.top}`;
+      } else {
+        const midY = p2.bottom + (p1.top - p2.bottom) / 2;
+        return `M ${p1.x} ${p1.top} V ${midY} H ${p2.x} V ${p2.bottom}`;
+      }
+    }
+
+    function drawArrows() {
+      const container = document.getElementById('diagram-canvas');
+      if (!container) return;
+
+      const connections = [
+        { id: 'conn-fe-gw', from: 'node-frontend', to: 'node-gateway' },
+        { id: 'conn-gw-eureka', from: 'node-gateway', to: 'node-eureka' },
+        { id: 'conn-gw-operador', from: 'node-gateway', to: 'node-ms-operador' },
+        { id: 'conn-gw-buscador', from: 'node-gateway', to: 'node-ms-buscador' },
+        { id: 'conn-operador-eureka', from: 'node-ms-operador', to: 'node-eureka' },
+        { id: 'conn-buscador-eureka', from: 'node-ms-buscador', to: 'node-eureka' },
+        { id: 'conn-operador-buscador', from: 'node-ms-operador', to: 'node-ms-buscador' },
+        { id: 'conn-operador-db', from: 'node-ms-operador', to: 'node-db-operador' },
+        { id: 'conn-buscador-db', from: 'node-ms-buscador', to: 'node-db-buscador' }
+      ];
+
+      connections.forEach(conn => {
+        const pathElem = document.getElementById(conn.id);
+        const fromElem = document.getElementById(conn.from);
+        const toElem = document.getElementById(conn.to);
+
+        if (pathElem && fromElem && toElem) {
+          const pathD = getOrthogonalPath(fromElem, toElem, container);
+          pathElem.setAttribute('d', pathD);
+        }
+      });
+    }
+
+    function renderStep() {
+      const currentFlow = flows.find(f => f.id === currentFlowIndex) || flows[2];
+      const step = currentFlow.steps[currentStepIndex];
+
+      // Update badge, description and http badge safely
+      const badgeElem = document.getElementById('step-badge');
+      const descElem = document.getElementById('step-description');
+      const httpElem = document.getElementById('step-http');
+
+      if (badgeElem) badgeElem.innerText = step.badge;
+      if (descElem) descElem.innerText = step.description;
+      if (httpElem) httpElem.innerText = step.http;
+
+      // Update button states
+      const prevBtn = document.getElementById('btn-prev');
+      const nextBtn = document.getElementById('btn-next');
+
+      if (prevBtn) prevBtn.disabled = (currentStepIndex === 0);
+      if (nextBtn) nextBtn.disabled = (currentStepIndex === currentFlow.steps.length - 1);
+
+      // Reset all nodes
+      const allNodes = document.querySelectorAll('[id^="node-"]');
+      allNodes.forEach(node => {
+        node.classList.remove('node-active');
+        node.classList.add('border-slate-300');
+      });
+
+      // Highlight active nodes
+      step.nodes.forEach(nodeId => {
+        const activeNode = document.getElementById(nodeId);
+        if (activeNode) {
+          activeNode.classList.add('node-active');
+          activeNode.classList.remove('border-slate-300');
+        }
+      });
+
+      // Reset all arrow connections
+      const allPaths = document.querySelectorAll('.arrow-path');
+      allPaths.forEach(path => path.classList.remove('arrow-path-active'));
+
+      // Highlight active connections
+      step.connections.forEach(connId => {
+        const activeConn = document.getElementById(connId);
+        if (activeConn) {
+          activeConn.classList.add('arrow-path-active');
+        }
+      });
+
+      // Update flow selector button styles
+      for (let i = 0; i <= 3; i++) {
+        const btn = document.getElementById(`flow-btn-${i}`);
+        if (btn) {
+          if (i === currentFlowIndex) {
+            btn.className = "flow-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-600 bg-blue-600 text-white shadow-md transition-all";
+          } else {
+            btn.className = "flow-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all";
+          }
+        }
+      }
+    }
+
+    function setFlow(flowId) {
+      currentFlowIndex = flowId;
+      currentStepIndex = 0;
+      renderStep();
+      drawArrows();
+    }
+
+    function nextStep() {
+      const currentFlow = flows.find(f => f.id === currentFlowIndex);
+      if (currentStepIndex < currentFlow.steps.length - 1) {
+        currentStepIndex++;
+        renderStep();
+      }
+    }
+
+    function prevStep() {
+      if (currentStepIndex > 0) {
+        currentStepIndex--;
+        renderStep();
+      }
+    }
+
+    function resetFlow() {
+      currentStepIndex = 0;
+      renderStep();
+    }
+
+    function switchTab(tab) {
+      const secInteractive = document.getElementById('sec-interactive');
+      const secSequence = document.getElementById('sec-sequence');
+      const secRules = document.getElementById('sec-rules');
+
+      if (secInteractive) secInteractive.classList.add('hidden');
+      if (secSequence) secSequence.classList.add('hidden');
+      if (secRules) secRules.classList.add('hidden');
+
+      const tabInteractive = document.getElementById('tab-interactive');
+      const tabSequence = document.getElementById('tab-sequence');
+      const tabRules = document.getElementById('tab-rules');
+
+      const inactiveClass = "px-4 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900";
+      const activeClass = "px-4 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all text-white bg-blue-600 shadow-sm";
+
+      if (tabInteractive) tabInteractive.className = inactiveClass;
+      if (tabSequence) tabSequence.className = inactiveClass;
+      if (tabRules) tabRules.className = inactiveClass;
+
+      const activeSec = document.getElementById(`sec-${tab}`);
+      const activeTab = document.getElementById(`tab-${tab}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+      if (activeTab) activeTab.className = activeClass;
+
+      if (tab === 'interactive') {
+        setTimeout(() => {
+          drawArrows();
+          renderStep();
+        }, 100);
+      } else if (tab === 'sequence') {
+        setTimeout(async () => {
+          if (window.mermaid) {
+            try {
+              document.querySelectorAll('.mermaid').forEach(el => {
+                el.removeAttribute('data-processed');
+              });
+              await mermaid.run({ querySelector: '.mermaid' });
+            } catch (e) {
+              console.log("Error rendering Mermaid sequence diagrams:", e);
+            }
+          }
+        }, 100);
+      }
+    }
+
+    window.onload = function() {
+      if (window.mermaid) {
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+      }
+      drawArrows();
+      renderStep();
+      window.addEventListener('resize', drawArrows);
+    };
+  </script>
+</body>
+</html>
